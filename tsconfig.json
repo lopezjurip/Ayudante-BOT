@@ -1,0 +1,33 @@
+{
+    "version": "1.5.0",
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "outDir": "./build/",
+        "isolatedModules": false,
+        "jsx": "react",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "./**/*.tsx",
+        "!./node_modules/**/*"
+    ],
+    "files": [
+        "./src/bot/telegram-bot-typings.d.ts",
+        "./src/bot/telegram-bot-typings.ts",
+        "./src/bot/telegram-typed-bot.ts",
+        "./src/index.ts",
+        "./typings/es6-promise/es6-promise.d.ts",
+        "./typings/node-telegram-bot-api/TelegramBot.d.ts",
+        "./typings/node/node.d.ts",
+        "./typings/tsd.d.ts"
+    ]
+}
