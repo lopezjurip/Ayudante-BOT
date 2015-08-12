@@ -39,7 +39,10 @@ gulp.task('compile:typescript', function () {
   .src(paths.tscripts.src)
   .pipe(tsc({
     module: "commonjs",
-    emitError: false
+    emitError: false,
+    "target": "es5",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
   }))
   .pipe(gulp.dest(paths.tscripts.dest));
 });

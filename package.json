@@ -9,7 +9,10 @@
     "url": "https://github.com/mrpatiwi/telegram-typed-bot"
   },
   "dependencies": {
-    "node-telegram-bot-api": "^0.12.1"
+    "babyparse": "^0.4.3",
+    "mkdirp": "^0.5.1",
+    "node-telegram-bot-api": "^0.12.1",
+    "octokat": "^0.4.11"
   },
   "devDependencies": {
     "gulp": "^3.6.2",
