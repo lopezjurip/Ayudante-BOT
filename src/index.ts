@@ -7,44 +7,44 @@ const HOST = process.env.OPENSHIFT_NODEJS_IP || process.env.LOCAL_IP; // whitout
 const DOMAIN = process.env.OPENSHIFT_APP_DNS || process.env.LOCAL_URL; // whitout http
 
 const options: AyudanteBOTOptions = {
-  github: 'mrpatiwi',
-  tokens: {
-    telegram: TELEGRAM_TOKEN,
-    github: GITHUB_TOKEN,
-  },
-  server: {
-    host: HOST,
-    port: PORT,
-    domain: DOMAIN,
-  }
+    github: 'mrpatiwi',
+    tokens: {
+        telegram: TELEGRAM_TOKEN,
+        github: GITHUB_TOKEN,
+    },
+    server: {
+        host: HOST,
+        port: PORT,
+        domain: DOMAIN,
+    }
 }
 
 const bot = new AyudanteBOT(options);
 
 bot.getMe().then(me => {
-  console.log('Bot successfully deployed!')
-  console.log(
-    `Bot info:
+    console.log('Bot successfully deployed!')
+    console.log(
+        `Bot info:
     - ID: ${me.id}
     - Name: ${me.first_name}
     - Username: ${me.username}`
-  );
-  console.log(
-    `Server info:
+    );
+    console.log(
+        `Server info:
     - Host: ${options.server.host}
     - Port: ${options.server.port}
     - Domain: ${options.server.domain}`
-  );
+    );
 });
 
 bot.onCommand('/syllabus', (msg: t.Message, arg?: string) => {
-  bot.sendMessage(msg.chat.id,
-    `El syllabus está en: \n${bot.syllabusUrl}`
-  );
+    bot.sendMessage(msg.chat.id,
+        `El syllabus está en: \n${bot.syllabusUrl}`
+    );
 })
 
 bot.onCommand('/private', (msg: t.Message, arg?: string) => {
-  bot.sendMessage(msg.chat.id,
-    `El repositorio privado está en: \n${bot.privateUrl}`
-  );
+    bot.sendMessage(msg.chat.id,
+        `El repositorio privado está en: \n${bot.privateUrl}`
+    );
 })

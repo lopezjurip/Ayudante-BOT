@@ -24,6 +24,8 @@
         "./src/ayudante-bot.ts",
         "./src/bot/telegram-bot-typings.ts",
         "./src/bot/telegram-typed-bot.ts",
+        "./src/git/git-mananger.ts",
+        "./src/git/repository.ts",
         "./src/index.ts",
         "./src/models/models.ts",
         "./src/models/parser.ts",
