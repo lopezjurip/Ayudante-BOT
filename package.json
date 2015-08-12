@@ -18,7 +18,7 @@
     "mocha": "*"
   },
   "scripts": {
-    "start": "npm start",
+    "start": "node ./build/index.js",
     "test": "mocha"
   },
   "typescript": {

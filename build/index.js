@@ -28,3 +28,39 @@ bot.onCommand('/syllabus', function (msg, arg) {
 bot.onCommand('/private', function (msg, arg) {
     bot.sendMessage(msg.chat.id, "El repositorio privado est\u00E1 en: \n" + bot.privateUrl);
 });
+bot.onCommand('/publicar_actividad', function (msg, arg) {
+    if (arg === void 0) { arg = ''; }
+    if (arg == '') {
+        bot.sendMessage(msg.chat.id, "Debes especificar el n\u00FAmero de la AC como par\u00E1metro.");
+    }
+    else {
+        var number = parseInt(arg, 10);
+        bot.sendMessage(msg.chat.id, "Publicando en: " + bot.syllabusUrl + "/tree/master/Actividades/AC" + ((number < 10) ? '0' + number : number));
+        bot.publishActivity(number, function (err, result) {
+            if (err) {
+                bot.sendMessage(msg.chat.id, "Publicado archivo: " + result.content.path);
+            }
+            else {
+                bot.sendMessage(msg.chat.id, "Publicado archivo: " + result.content.path);
+            }
+        });
+    }
+});
+bot.onCommand('/publicar_tarea', function (msg, arg) {
+    if (arg === void 0) { arg = ''; }
+    if (arg == '') {
+        bot.sendMessage(msg.chat.id, "Debes especificar el n\u00FAmero de la T como par\u00E1metro.");
+    }
+    else {
+        var number = parseInt(arg, 10);
+        bot.sendMessage(msg.chat.id, "Publicando en: " + bot.syllabusUrl + "/tree/master/Tareas/T" + ((number < 10) ? '0' + number : number));
+        bot.publishHomework(number, function (err, result) {
+            if (err) {
+                bot.sendMessage(msg.chat.id, "Publicado archivo: " + result.content.path);
+            }
+            else {
+                bot.sendMessage(msg.chat.id, "Publicado archivo: " + result.content.path);
+            }
+        });
+    }
+});

@@ -1,8 +1,4 @@
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
 var repository_1 = require("./repository");
-__export(require("./repository"));
 var Octokat = require('octokat');
 var GitManager = (function () {
     function GitManager(token) {

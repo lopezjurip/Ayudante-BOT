@@ -15,10 +15,10 @@ function writeFile(path: string, data: string, encoding: string, callback: (err:
 
 export default class Repository {
     repo: any
-    owner: Person
+    owner: string
     name: string
 
-    constructor(repo: any, owner: Person, name: string) {
+    constructor(repo: any, owner: string, name: string) {
         this.repo = repo;
         this.owner = owner;
         this.name = name;
@@ -49,7 +49,7 @@ export default class Repository {
         })
     }
 
-    uploadFile(frm: string, destination: string, message: string, callback = undefined) {
+    uploadFile(frm: string, destination: string, message: string, callback?: (err: any, result: any) => void) {
         this.repo.contents(destination).fetch().then(contents => {
             // Will override
             this.updateFile(frm, destination, message, contents.sha, callback);
@@ -64,7 +64,7 @@ export default class Repository {
         });
     }
 
-    private updateFile(frm: string, destination: string, message: string, sha: string, callback = undefined) {
+    private updateFile(frm: string, destination: string, message: string, sha: string, callback?: (err: any, result: any) => void) {
         const base64data = fs.readFileSync(frm).toString('base64');
         const config = {
             message: message,
@@ -74,7 +74,7 @@ export default class Repository {
         this.commitFile(frm, destination, config, callback);
     }
 
-    private writeFile(frm: string, destination: string, message: string, callback = undefined) {
+    private writeFile(frm: string, destination: string, message: string, callback?: (err: any, result: any) => void) {
         const base64data = fs.readFileSync(frm).toString('base64');
         const config = {
             message: message,
@@ -83,13 +83,13 @@ export default class Repository {
         this.commitFile(frm, destination, config, callback);
     }
 
-    private commitFile(frm: string, destination: string, config, callback = undefined) {
+    private commitFile(frm: string, destination: string, config, callback?: (err: any, result: any) => void) {
         return this.repo.contents(destination).add(config).then(info => {
-            callback(info, undefined);
+            callback(undefined, info);
             fs.unlinkSync(frm);
 
         }).catch(err => {
-            callback(undefined, err);
+            callback(err, undefined);
             fs.unlinkSync(frm);
         });
     }

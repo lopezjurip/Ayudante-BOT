@@ -1,15 +1,14 @@
 import Repository from "./repository";
-export * from "./repository"
 let Octokat = require('octokat')
 
 export class GitManager {
     octo: any
 
-    constructor(token) {
+    constructor(token: string) {
         this.octo = new Octokat({ token: token });
     }
 
-    repo(owner, name) {
+    repo(owner: string, name: string): Repository {
         return new Repository(this.octo.repos(owner, name), owner, name);
     }
 }

@@ -5,6 +5,8 @@ import {resolve} from 'path'
 import {TelegramTypedBot as Bot, IServerOptions, BotAction} from './bot/telegram-typed-bot';
 import {loadStudents, loadAssistents} from './models/parser';
 import {Assistent, Student, Person} from './models/models';
+import Repository from "./git/repository";
+import {GitManager} from "./git/git-mananger";
 
 export import t = require('./bot/telegram-bot-typings')
 
@@ -28,15 +30,30 @@ interface ISearchAssistentOptions extends ISearchOptions {
     level?: string
 }
 
+export interface Repositories {
+    syllabus: Repository
+    private: Repository
+    starter: Repository
+}
+
 export class AyudanteBOT extends Bot {
     github: string
+    gitmanager: GitManager
+    repositories: Repositories
     students: Student[]
     assistents: Assistent[]
 
     constructor(options: AyudanteBOTOptions) {
         super(options.tokens.telegram, options.server)
 
+        this.gitmanager = new GitManager(options.tokens.github)
+
         this.github = options.github
+        this.repositories = {
+            syllabus: this.gitmanager.repo(this.github, 'syllabus'),
+            private: this.gitmanager.repo(this.github, 'private'),
+            starter: this.gitmanager.repo(this.github, 'starter')
+        }
         this.students = loadStudents(resolve('.', 'data', 'students.csv'))
         this.assistents = loadAssistents(resolve('.', 'data', 'assistents.csv'))
     }
@@ -59,6 +76,37 @@ export class AyudanteBOT extends Bot {
 
     personGithubURLinOrganization(person: Person): string {
         return this.githubUrl + '/' + person.github;
+    }
+
+    publishActivity(number: number, callback?: (err: any, result: any) => void) {
+        const twoDigit = (number < 10) ? '0' + number : '' + number;
+        const path = `Actividades/AC${twoDigit}/Enunciado/Release/`;
+        const message = `[BOT] Publicada AC${twoDigit}`;
+        this.publish(path, message, callback);
+    }
+
+    publishHomework(number: number, callback?: (err: any, result: any) => void) {
+        const twoDigit = (number < 10) ? '0' + number : '' + number;
+        const path = `Tareas/T${twoDigit}/Enunciado/Release/`;
+        const message = `[BOT] Publicada T${twoDigit}`;
+        this.publish(path, message, callback);
+    }
+
+    publish(path: string, message: string, callback?: (err: any, result: any) => void) {
+        this.repositories.private.download(path, (err: any, relative: string, full: string) => {
+            // On each file
+            if (err) {
+                console.log('Download error', path, err);
+                if (callback) callback(err, path);
+            } else {
+                this.repositories.syllabus.uploadFile(
+                    full,
+                    relative.replace('/Enunciado/Release', ''),
+                    message,
+                    callback
+                );
+            }
+        })
     }
 
     searchStudent(o: ISearchStudentOptions): Student[] {

@@ -50,7 +50,6 @@ var Repository = (function () {
     };
     Repository.prototype.uploadFile = function (frm, destination, message, callback) {
         var _this = this;
-        if (callback === void 0) { callback = undefined; }
         this.repo.contents(destination).fetch().then(function (contents) {
             _this.updateFile(frm, destination, message, contents.sha, callback);
         }).catch(function (err) {
@@ -63,7 +62,6 @@ var Repository = (function () {
         });
     };
     Repository.prototype.updateFile = function (frm, destination, message, sha, callback) {
-        if (callback === void 0) { callback = undefined; }
         var base64data = fs.readFileSync(frm).toString('base64');
         var config = {
             message: message,
@@ -73,7 +71,6 @@ var Repository = (function () {
         this.commitFile(frm, destination, config, callback);
     };
     Repository.prototype.writeFile = function (frm, destination, message, callback) {
-        if (callback === void 0) { callback = undefined; }
         var base64data = fs.readFileSync(frm).toString('base64');
         var config = {
             message: message,
@@ -82,12 +79,11 @@ var Repository = (function () {
         this.commitFile(frm, destination, config, callback);
     };
     Repository.prototype.commitFile = function (frm, destination, config, callback) {
-        if (callback === void 0) { callback = undefined; }
         return this.repo.contents(destination).add(config).then(function (info) {
-            callback(info, undefined);
+            callback(undefined, info);
             fs.unlinkSync(frm);
         }).catch(function (err) {
-            callback(undefined, err);
+            callback(err, undefined);
             fs.unlinkSync(frm);
         });
     };
