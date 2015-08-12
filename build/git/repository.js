@@ -15,7 +15,7 @@ var Repository = (function () {
     }
     Object.defineProperty(Repository.prototype, "dir", {
         get: function () {
-            return path_1.resolve('.', 'temp', this.owner, this.name);
+            return path_1.resolve(process.env.OPENSHIFT_TMP_DIR, this.owner, this.name);
         },
         enumerable: true,
         configurable: true

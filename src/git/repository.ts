@@ -23,7 +23,7 @@ export default class Repository {
     }
 
     get dir(): string {
-        return resolve('.', 'temp', this.owner, this.name);
+        return resolve(process.env.OPENSHIFT_TMP_DIR, this.owner, this.name);
     }
 
     download(path: string, perFileCallback?: (err: any, relative: string, full: string) => void) {
