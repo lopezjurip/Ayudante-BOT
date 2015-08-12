@@ -6,11 +6,9 @@ import {Person} from "../models/models";
 import mkdirp = require("mkdirp");
 import fs = require('fs')
 
-function writeFile(path: string, data: string, encoding: string, callback: (err: any, made: string) => void) {
-    mkdirp(dirname(path), (err, made) => {
-        if (err) return callback(err, made);
-        fs.writeFile(path, new Buffer(data, encoding), callback);
-    });
+function writeFileSync(path: string, data: string, encoding: string) {
+    let made = mkdirp.sync(dirname(path))
+    fs.writeFileSync(path, new Buffer(data, encoding))
 }
 
 export default class Repository {
@@ -28,19 +26,29 @@ export default class Repository {
         return resolve('.', 'temp', this.owner, this.name);
     }
 
-    download(path: string, perFileCallback: (err: any, relative: string, full: string) => void = undefined) {
+    download(path: string, perFileCallback?: (err: any, relative: string, full: string) => void) {
         this.repo.contents(path).fetch().then(contents => {
-            contents = (contents instanceof Array) ? contents : [contents]
-            contents.forEach(content => {
+            let collection: any[] = (contents instanceof Array) ? contents : [contents]
+            collection.forEach(content => {
                 if (content.type === 'dir') {
                     this.download(content.path, perFileCallback)
                 } else {
                     content.fetch().then(result => {
                         let writePath = resolve(this.dir, result.path)
-                        writeFile(writePath, result.content, result.encoding, (err, made) => {
-                            if (err) console.log('Writting file error:', err)
-                            if (perFileCallback) perFileCallback(err, content.path, writePath)
-                        })
+                        writeFileSync(writePath, result.content, result.encoding)
+
+                        console.log('Download ---------------------')
+                        console.log('From:', path)
+                        console.log('To:', writePath)
+                        console.log('Status:', 'Success')
+                        console.log('------------------------------')
+
+                        if (perFileCallback) perFileCallback(undefined, content.path, writePath)
+                    }).catch(err => {
+                        console.log('Download ---------------------')
+                        console.log('From:', path)
+                        console.log('Success:', 'Fail')
+                        console.log('------------------------------')
                     })
                 }
             })
@@ -84,11 +92,20 @@ export default class Repository {
     }
 
     private commitFile(frm: string, destination: string, config, callback?: (err: any, result: any) => void) {
+        console.log('Commit ---------------------')
+        console.log('From:', frm)
+        console.log('To:', destination)
+        console.log('SHA:', config.sha)
+
         return this.repo.contents(destination).add(config).then(info => {
+            console.log('Status:', 'Success')
+            console.log('------------------------------')
             callback(undefined, info);
             fs.unlinkSync(frm);
 
         }).catch(err => {
+            console.log('Status:', 'Fail')
+            console.log('------------------------------')
             callback(err, undefined);
             fs.unlinkSync(frm);
         });

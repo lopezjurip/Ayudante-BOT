@@ -3,12 +3,9 @@
 var path_1 = require('path');
 var mkdirp = require("mkdirp");
 var fs = require('fs');
-function writeFile(path, data, encoding, callback) {
-    mkdirp(path_1.dirname(path), function (err, made) {
-        if (err)
-            return callback(err, made);
-        fs.writeFile(path, new Buffer(data, encoding), callback);
-    });
+function writeFileSync(path, data, encoding) {
+    var made = mkdirp.sync(path_1.dirname(path));
+    fs.writeFileSync(path, new Buffer(data, encoding));
 }
 var Repository = (function () {
     function Repository(repo, owner, name) {
@@ -25,22 +22,28 @@ var Repository = (function () {
     });
     Repository.prototype.download = function (path, perFileCallback) {
         var _this = this;
-        if (perFileCallback === void 0) { perFileCallback = undefined; }
         this.repo.contents(path).fetch().then(function (contents) {
-            contents = (contents instanceof Array) ? contents : [contents];
-            contents.forEach(function (content) {
+            var collection = (contents instanceof Array) ? contents : [contents];
+            collection.forEach(function (content) {
                 if (content.type === 'dir') {
                     _this.download(content.path, perFileCallback);
                 }
                 else {
                     content.fetch().then(function (result) {
                         var writePath = path_1.resolve(_this.dir, result.path);
-                        writeFile(writePath, result.content, result.encoding, function (err, made) {
-                            if (err)
-                                console.log('Writting file error:', err);
-                            if (perFileCallback)
-                                perFileCallback(err, content.path, writePath);
-                        });
+                        writeFileSync(writePath, result.content, result.encoding);
+                        console.log('Download ---------------------');
+                        console.log('From:', path);
+                        console.log('To:', writePath);
+                        console.log('Status:', 'Success');
+                        console.log('------------------------------');
+                        if (perFileCallback)
+                            perFileCallback(undefined, content.path, writePath);
+                    }).catch(function (err) {
+                        console.log('Download ---------------------');
+                        console.log('From:', path);
+                        console.log('Success:', 'Fail');
+                        console.log('------------------------------');
                     });
                 }
             });
@@ -79,10 +82,18 @@ var Repository = (function () {
         this.commitFile(frm, destination, config, callback);
     };
     Repository.prototype.commitFile = function (frm, destination, config, callback) {
+        console.log('Commit ---------------------');
+        console.log('From:', frm);
+        console.log('To:', destination);
+        console.log('SHA:', config.sha);
         return this.repo.contents(destination).add(config).then(function (info) {
+            console.log('Status:', 'Success');
+            console.log('------------------------------');
             callback(undefined, info);
             fs.unlinkSync(frm);
         }).catch(function (err) {
+            console.log('Status:', 'Fail');
+            console.log('------------------------------');
             callback(err, undefined);
             fs.unlinkSync(frm);
         });
