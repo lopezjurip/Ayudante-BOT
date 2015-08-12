@@ -33,7 +33,8 @@ bot.getMe().then(me => {
         `Server info:
     - Host: ${options.server.host}
     - Port: ${options.server.port}
-    - Domain: ${options.server.domain}`
+    - Domain: ${options.server.domain}
+    - Tmp: ${process.env.OPENSHIFT_TMP_DIR}`
     );
 });
 

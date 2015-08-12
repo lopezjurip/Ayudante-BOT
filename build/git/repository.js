@@ -43,6 +43,7 @@ var Repository = (function () {
                         console.log('Download ---------------------');
                         console.log('From:', path);
                         console.log('Success:', 'Fail');
+                        console.log('Error:', err);
                         console.log('------------------------------');
                     });
                 }
@@ -93,6 +94,7 @@ var Repository = (function () {
             fs.unlinkSync(frm);
         }).catch(function (err) {
             console.log('Status:', 'Fail');
+            console.log('Error:', err);
             console.log('------------------------------');
             callback(err, undefined);
             fs.unlinkSync(frm);

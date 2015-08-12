@@ -20,7 +20,7 @@ var bot = new ayudante_bot_1.AyudanteBOT(options);
 bot.getMe().then(function (me) {
     console.log('Bot successfully deployed!');
     console.log("Bot info:\n    - ID: " + me.id + "\n    - Name: " + me.first_name + "\n    - Username: " + me.username);
-    console.log("Server info:\n    - Host: " + options.server.host + "\n    - Port: " + options.server.port + "\n    - Domain: " + options.server.domain);
+    console.log("Server info:\n    - Host: " + options.server.host + "\n    - Port: " + options.server.port + "\n    - Domain: " + options.server.domain + "\n    - Tmp: " + process.env.OPENSHIFT_TMP_DIR);
 });
 bot.onCommand('/syllabus', function (msg, arg) {
     bot.sendMessage(msg.chat.id, "El syllabus est\u00E1 en: \n" + bot.syllabusUrl);

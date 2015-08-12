@@ -48,6 +48,7 @@ export default class Repository {
                         console.log('Download ---------------------')
                         console.log('From:', path)
                         console.log('Success:', 'Fail')
+                        console.log('Error:', err)
                         console.log('------------------------------')
                     })
                 }
@@ -105,6 +106,7 @@ export default class Repository {
 
         }).catch(err => {
             console.log('Status:', 'Fail')
+            console.log('Error:', err)
             console.log('------------------------------')
             callback(err, undefined);
             fs.unlinkSync(frm);
