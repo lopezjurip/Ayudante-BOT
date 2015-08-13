@@ -50,9 +50,9 @@ export default class Repository {
             }))
         }).then(result => {
             function flatten(arr) {
-              return arr.reduce(function (flat, toFlatten) {
-                return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
-              }, []);
+                return arr.reduce(function(flat, toFlatten) {
+                    return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+                }, []);
             }
             return flatten(result)
         }).catch(err => {
@@ -71,7 +71,7 @@ export default class Repository {
         return this.repo.git.refs.heads(branch).fetch();
     }
 
-    public commitFiles(files: {path: string, content: any, encoding: string}[], message: string, branch: string = 'master') {
+    public commitFiles(files: { path: string, content: any, encoding: string }[], message: string, branch: string = 'master') {
         return Promise.all(files.map(file => {
             return this.repo.git.blobs.create({
                 content: file.content,

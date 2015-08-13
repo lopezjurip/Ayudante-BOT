@@ -58,30 +58,21 @@ bot.onCommand('/publicar_actividad', (msg: t.Message, arg: string = '') => {
     } else {
         const number = parseInt(arg, 10);
         bot.sendMessage(msg.chat.id,
-            `Publicando en: ${bot.syllabusUrl}/tree/master/Actividades/AC${(number < 10) ? '0' + number : number}`
+            `Publicando en: ${bot.syllabusUrl}/tree/master/Actividades/AC${(number < 10) ? '0' + number : number} ...`
         );
-        bot.publishActivity(number).then(result => {
+        bot.publishActivity(number).then(url => {
             bot.sendMessage(msg.chat.id,
-                `Publicado archivo: ${result}`
+                `Éxito! Commit: ${url}`
             );
-            /*
-            if (err) {
-                bot.sendMessage(msg.chat.id,
-                    `Publicado archivo: ${result.content.path}`
-                );
-            } else {
-                bot.sendMessage(msg.chat.id,
-                    `Publicado archivo: ${result.content.path}`
-                );
-            }
-            */
         }).catch(err => {
             console.log(err)
+            bot.sendMessage(msg.chat.id,
+                `Error: ${err}`
+            );
         })
     }
 })
 
-/*
 bot.onCommand('/publicar_tarea', (msg: t.Message, arg: string = '') => {
     if (arg == '') {
         bot.sendMessage(msg.chat.id,
@@ -90,19 +81,37 @@ bot.onCommand('/publicar_tarea', (msg: t.Message, arg: string = '') => {
     } else {
         const number = parseInt(arg, 10);
         bot.sendMessage(msg.chat.id,
-            `Publicando en: ${bot.syllabusUrl}/tree/master/Tareas/T${(number < 10) ? '0' + number : number}`
+            `Publicando en: ${bot.syllabusUrl}/tree/master/Tareas/T${(number < 10) ? '0' + number : number} ...`
         );
-        bot.publishHomework(number, (err: any, result: any) => {
-            if (err) {
-                bot.sendMessage(msg.chat.id,
-                    `Publicado archivo: ${result.content.path}`
-                );
-            } else {
-                bot.sendMessage(msg.chat.id,
-                    `Publicado archivo: ${result.content.path}`
-                );
-            }
+        bot.publishHomework(number).then(url => {
+            bot.sendMessage(msg.chat.id,
+                `Éxito! Commit: ${url}`
+            );
+        }).catch(err => {
+            console.log(err)
+            bot.sendMessage(msg.chat.id,
+                `Error: ${err}`
+            );
         })
     }
 })
-*/
+
+bot.onCommand('/recolectar_actividad', (msg: t.Message, arg: string = '') => {
+    
+})
+
+bot.onCommand('/recolectar_tarea', (msg: t.Message, arg: string = '') => {
+
+})
+
+bot.onCommand('/echo_from', (msg: t.Message, arg: string = '') => {
+    bot.sendMessage(msg.chat.id,
+        JSON.stringify(msg.from)
+    );
+})
+
+bot.onCommand('/echo_chat', (msg: t.Message, arg: string = '') => {
+    bot.sendMessage(msg.chat.id,
+        JSON.stringify(msg.chat)
+    );
+})

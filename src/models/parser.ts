@@ -42,6 +42,7 @@ export function loadAssistents(path: string): Assistent[] {
             uc: row.UC,
             github: row.Github,
             phone: row.Phone,
+            telegram: row.Telegram,
         });
     });
 }

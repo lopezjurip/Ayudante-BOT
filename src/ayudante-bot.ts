@@ -2,6 +2,7 @@
 /// <reference path="../typings/node/node.d.ts"/>
 
 import {resolve} from 'path'
+import * as fs from 'fs';
 import {TelegramTypedBot as Bot, IServerOptions, BotAction} from './bot/telegram-typed-bot';
 import {loadStudents, loadAssistents} from './models/parser';
 import {Assistent, Student, Person} from './models/models';
@@ -9,7 +10,6 @@ import Repository from "./git/repository";
 import {GitManager} from "./git/git-mananger";
 
 export import t = require('./bot/telegram-bot-typings')
-import fs = require('fs')
 
 export interface AyudanteBOTOptions {
     github: string
@@ -79,21 +79,25 @@ export class AyudanteBOT extends Bot {
         return this.githubUrl + '/' + person.github;
     }
 
-    publishActivity(number: number) {
+    studentPrivateRepository(person: Person): Repository {
+        return this.gitmanager.repo(this.github, person.github)
+    }
+
+    publishActivity(number: number): Promise<string> {
         const twoDigit = (number < 10) ? '0' + number : '' + number;
         const path = `Actividades/AC${twoDigit}/Enunciado/Release/`;
         const message = `[BOT] Publicada AC${twoDigit}`;
         return this.publish(path, message);
     }
 
-    publishHomework(number: number) {
+    publishHomework(number: number): Promise<string> {
         const twoDigit = (number < 10) ? '0' + number : '' + number;
         const path = `Tareas/T${twoDigit}/Enunciado/Release/`;
         const message = `[BOT] Publicada T${twoDigit}`;
         return this.publish(path, message);
     }
 
-    publish(path: string, message: string) {
+    publish(path: string, message: string): Promise<string> {
         return this.repositories.private.download(path).then(results => {
             return this.repositories.syllabus.commitFiles(results.map(item => {
                 return {
@@ -101,25 +105,37 @@ export class AyudanteBOT extends Bot {
                     content: fs.readFileSync(item.full).toString('base64'),
                     encoding: 'base64'
                 }
-            }), message)
+            }), message).then(commit => {
+                results.map(r => r.full).forEach(fs.unlinkSync)
+                return commit
+            })
+        }).then(commit => {
+            return commit.object.url
         })
+    }
 
-        /*
-        this.repositories.private.download(path, (err: any, relative: string, full: string) => {
-            // On each file
-            if (err) {
-                console.log('Download error', path, err);
-                if (callback) callback(err, path);
-            } else {
-                this.repositories.syllabus.uploadFile(
-                    full,
-                    relative.replace('/Enunciado/Release', ''),
-                    message,
-                    callback
-                );
+    recollect() {
+        return Promise.all(this.students.filter(s => s.quitted).map(student => {
+            let repo = this.studentPrivateRepository(student)
+            return repo.download('path: string').then(files => {
+                return {student: student, files: files}
+            })
+        })).then(result => {
+            /*
+            function flatten<T>(arr) : T[] {
+                return arr.reduce(function(flat, toFlatten) {
+                    return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+                }, []);
             }
-        })
-        */
+            let files = flatten<{relative: string, full: string}>(result).map(item => {
+                return {
+                    path: 'Actividades/AC01/Corrección/',
+                    content: fs.readFileSync(item.full).toString('base64'),
+                    encoding: 'base64'
+                }
+            })
+            */
+        });
     }
 
     searchStudent(o: ISearchStudentOptions): Student[] {

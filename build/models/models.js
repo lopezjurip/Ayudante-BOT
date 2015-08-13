@@ -44,6 +44,7 @@ var Assistent = (function (_super) {
         this.area = args.area;
         this.level = args.level;
         this.phone = args.phone;
+        this.telegram = args.telegram;
     }
     Object.defineProperty(Assistent.prototype, "phoneWithArea", {
         get: function () {

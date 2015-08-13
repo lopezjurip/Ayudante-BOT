@@ -35,11 +35,42 @@ bot.onCommand('/publicar_actividad', function (msg, arg) {
     }
     else {
         var number = parseInt(arg, 10);
-        bot.sendMessage(msg.chat.id, "Publicando en: " + bot.syllabusUrl + "/tree/master/Actividades/AC" + ((number < 10) ? '0' + number : number));
-        bot.publishActivity(number).then(function (result) {
-            bot.sendMessage(msg.chat.id, "Publicado archivo: " + result);
+        bot.sendMessage(msg.chat.id, "Publicando en: " + bot.syllabusUrl + "/tree/master/Actividades/AC" + ((number < 10) ? '0' + number : number) + " ...");
+        bot.publishActivity(number).then(function (url) {
+            bot.sendMessage(msg.chat.id, "\u00C9xito! Commit: " + url);
         }).catch(function (err) {
             console.log(err);
+            bot.sendMessage(msg.chat.id, "Error: " + err);
         });
     }
+});
+bot.onCommand('/publicar_tarea', function (msg, arg) {
+    if (arg === void 0) { arg = ''; }
+    if (arg == '') {
+        bot.sendMessage(msg.chat.id, "Debes especificar el n\u00FAmero de la T como par\u00E1metro.");
+    }
+    else {
+        var number = parseInt(arg, 10);
+        bot.sendMessage(msg.chat.id, "Publicando en: " + bot.syllabusUrl + "/tree/master/Tareas/T" + ((number < 10) ? '0' + number : number) + " ...");
+        bot.publishHomework(number).then(function (url) {
+            bot.sendMessage(msg.chat.id, "\u00C9xito! Commit: " + url);
+        }).catch(function (err) {
+            console.log(err);
+            bot.sendMessage(msg.chat.id, "Error: " + err);
+        });
+    }
+});
+bot.onCommand('/recolectar_actividad', function (msg, arg) {
+    if (arg === void 0) { arg = ''; }
+});
+bot.onCommand('/recolectar_tarea', function (msg, arg) {
+    if (arg === void 0) { arg = ''; }
+});
+bot.onCommand('/echo_from', function (msg, arg) {
+    if (arg === void 0) { arg = ''; }
+    bot.sendMessage(msg.chat.id, JSON.stringify(msg.from));
+});
+bot.onCommand('/echo_chat', function (msg, arg) {
+    if (arg === void 0) { arg = ''; }
+    bot.sendMessage(msg.chat.id, JSON.stringify(msg.chat));
 });

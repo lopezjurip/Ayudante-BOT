@@ -36,6 +36,7 @@ function loadAssistents(path) {
             uc: row.UC,
             github: row.Github,
             phone: row.Phone,
+            telegram: row.Telegram,
         });
     });
 }

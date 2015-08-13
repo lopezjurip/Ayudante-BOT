@@ -36,6 +36,7 @@ export class Assistent extends Person {
     area: string
     level: string
     phone: string
+    telegram: number
 
     constructor(args) {
         super(args);
@@ -43,6 +44,7 @@ export class Assistent extends Person {
         this.area = args.area;
         this.level = args.level;
         this.phone = args.phone;
+        this.telegram = args.telegram
     }
 
     get phoneWithArea() {

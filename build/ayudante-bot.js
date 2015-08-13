@@ -6,11 +6,11 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var path_1 = require('path');
+var fs = require('fs');
 var telegram_typed_bot_1 = require('./bot/telegram-typed-bot');
 var parser_1 = require('./models/parser');
 var git_mananger_1 = require("./git/git-mananger");
 exports.t = require('./bot/telegram-bot-typings');
-var fs = require('fs');
 var AyudanteBOT = (function (_super) {
     __extends(AyudanteBOT, _super);
     function AyudanteBOT(options) {
@@ -56,6 +56,9 @@ var AyudanteBOT = (function (_super) {
     AyudanteBOT.prototype.personGithubURLinOrganization = function (person) {
         return this.githubUrl + '/' + person.github;
     };
+    AyudanteBOT.prototype.studentPrivateRepository = function (person) {
+        return this.gitmanager.repo(this.github, person.github);
+    };
     AyudanteBOT.prototype.publishActivity = function (number) {
         var twoDigit = (number < 10) ? '0' + number : '' + number;
         var path = "Actividades/AC" + twoDigit + "/Enunciado/Release/";
@@ -77,7 +80,22 @@ var AyudanteBOT = (function (_super) {
                     content: fs.readFileSync(item.full).toString('base64'),
                     encoding: 'base64'
                 };
-            }), message);
+            }), message).then(function (commit) {
+                results.map(function (r) { return r.full; }).forEach(fs.unlinkSync);
+                return commit;
+            });
+        }).then(function (commit) {
+            return commit.object.url;
+        });
+    };
+    AyudanteBOT.prototype.recollect = function () {
+        var _this = this;
+        return Promise.all(this.students.filter(function (s) { return s.quitted; }).map(function (student) {
+            var repo = _this.studentPrivateRepository(student);
+            return repo.download('path: string').then(function (files) {
+                return { student: student, files: files };
+            });
+        })).then(function (result) {
         });
     };
     AyudanteBOT.prototype.searchStudent = function (o) {
