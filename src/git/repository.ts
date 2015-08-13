@@ -1,5 +1,6 @@
 /// <reference path="../../typings/node/node.d.ts"/>
 /// <reference path="../../typings/mkdirp/mkdirp.d.ts"/>
+/// <reference path="../../typings/es6-promise/es6-promise.d.ts"/>
 
 import {resolve, dirname} from 'path'
 import {Person} from "../models/models";
@@ -15,6 +16,7 @@ export default class Repository {
     repo: any
     owner: string
     name: string
+    head: any
 
     constructor(repo: any, owner: string, name: string) {
         this.repo = repo;
@@ -23,27 +25,20 @@ export default class Repository {
     }
 
     get dir(): string {
-        return resolve(process.env.OPENSHIFT_TMP_DIR, this.owner, this.name);
+        return resolve(process.env.OPENSHIFT_TMP_DIR || './temp', this.owner, this.name);
     }
 
-    download(path: string, perFileCallback?: (err: any, relative: string, full: string) => void) {
-        this.repo.contents(path).fetch().then(contents => {
+    public download(path: string): Promise<{ relative: string, full: string }[]> {
+        return this.repo.contents(path).fetch().then(contents => {
             let collection: any[] = (contents instanceof Array) ? contents : [contents]
-            collection.forEach(content => {
+            return Promise.all(collection.map(content => {
                 if (content.type === 'dir') {
-                    this.download(content.path, perFileCallback)
+                    return this.download(content.path)
                 } else {
-                    content.fetch().then(result => {
+                    return content.fetch().then(result => {
                         let writePath = resolve(this.dir, result.path)
                         writeFileSync(writePath, result.content, result.encoding)
-
-                        console.log('Download ---------------------')
-                        console.log('From:', path)
-                        console.log('To:', writePath)
-                        console.log('Status:', 'Success')
-                        console.log('------------------------------')
-
-                        if (perFileCallback) perFileCallback(undefined, content.path, writePath)
+                        return { relative: content.path, full: writePath }
                     }).catch(err => {
                         console.log('Download ---------------------')
                         console.log('From:', path)
@@ -52,64 +47,64 @@ export default class Repository {
                         console.log('------------------------------')
                     })
                 }
-            })
+            }))
+        }).then(result => {
+            function flatten(arr) {
+              return arr.reduce(function (flat, toFlatten) {
+                return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+              }, []);
+            }
+            return flatten(result)
         }).catch(err => {
             console.log(err)
         })
     }
 
-    uploadFile(frm: string, destination: string, message: string, callback?: (err: any, result: any) => void) {
-        this.repo.contents(destination).fetch().then(contents => {
-            // Will override
-            this.updateFile(frm, destination, message, contents.sha, callback);
-
-        }).catch(err => {
-            if (err.status === 404) {
-                // Will create
-                this.writeFile(frm, destination, message, callback);
-            } else {
-                console.log(err);
-            }
+    private fetchTree() {
+        return this.fetchHead().then(commit => {
+            this.head = commit;
+            return this.repo.git.trees(commit.object.sha).fetch();
         });
     }
 
-    private updateFile(frm: string, destination: string, message: string, sha: string, callback?: (err: any, result: any) => void) {
-        const base64data = fs.readFileSync(frm).toString('base64');
-        const config = {
-            message: message,
-            content: base64data,
-            sha: sha,
-        };
-        this.commitFile(frm, destination, config, callback);
+    private fetchHead(branch: string = 'master') {
+        return this.repo.git.refs.heads(branch).fetch();
     }
 
-    private writeFile(frm: string, destination: string, message: string, callback?: (err: any, result: any) => void) {
-        const base64data = fs.readFileSync(frm).toString('base64');
-        const config = {
-            message: message,
-            content: base64data,
-        };
-        this.commitFile(frm, destination, config, callback);
-    }
-
-    private commitFile(frm: string, destination: string, config, callback?: (err: any, result: any) => void) {
-        console.log('Commit ---------------------')
-        console.log('From:', frm)
-        console.log('To:', destination)
-        console.log('SHA:', config.sha)
-
-        return this.repo.contents(destination).add(config).then(info => {
-            console.log('Status:', 'Success')
-            console.log('------------------------------')
-            callback(undefined, info);
-            fs.unlinkSync(frm);
-
-        }).catch(err => {
-            console.log('Status:', 'Fail')
-            console.log('Error:', err)
-            console.log('------------------------------')
-            callback(err, undefined);
-            fs.unlinkSync(frm);
+    public commitFiles(files: {path: string, content: any, encoding: string}[], message: string, branch: string = 'master') {
+        return Promise.all(files.map(file => {
+            return this.repo.git.blobs.create({
+                content: file.content,
+                encoding: file.encoding
+            })
+        })).then(blobs => {
+            return this.fetchTree().then(tree => {
+                return this.repo.git.trees.create({
+                    tree: files.map((file, index) => {
+                        return {
+                            path: file.path,
+                            mode: '100644',
+                            type: 'blob',
+                            sha: blobs[index].sha
+                        };
+                    }),
+                    base_tree: tree.sha
+                });
+            });
+        }).then(tree => {
+            return this.repo.git.commits.create({
+                message: message,
+                tree: tree.sha,
+                parents: [
+                    this.head.object.sha
+                ]
+            });
+        }).then(commit => {
+            return this.repo.git.refs.heads(branch).update({
+                sha: commit.sha
+            });
+        }).then(result => {
+            return result
         });
     }
 }

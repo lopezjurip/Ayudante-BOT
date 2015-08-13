@@ -9,6 +9,7 @@ import Repository from "./git/repository";
 import {GitManager} from "./git/git-mananger";
 
 export import t = require('./bot/telegram-bot-typings')
+import fs = require('fs')
 
 export interface AyudanteBOTOptions {
     github: string
@@ -78,21 +79,32 @@ export class AyudanteBOT extends Bot {
         return this.githubUrl + '/' + person.github;
     }
 
-    publishActivity(number: number, callback?: (err: any, result: any) => void) {
+    publishActivity(number: number) {
         const twoDigit = (number < 10) ? '0' + number : '' + number;
         const path = `Actividades/AC${twoDigit}/Enunciado/Release/`;
         const message = `[BOT] Publicada AC${twoDigit}`;
-        this.publish(path, message, callback);
+        return this.publish(path, message);
     }
 
-    publishHomework(number: number, callback?: (err: any, result: any) => void) {
+    publishHomework(number: number) {
         const twoDigit = (number < 10) ? '0' + number : '' + number;
         const path = `Tareas/T${twoDigit}/Enunciado/Release/`;
         const message = `[BOT] Publicada T${twoDigit}`;
-        this.publish(path, message, callback);
+        return this.publish(path, message);
     }
 
-    publish(path: string, message: string, callback?: (err: any, result: any) => void) {
+    publish(path: string, message: string) {
+        return this.repositories.private.download(path).then(results => {
+            return this.repositories.syllabus.commitFiles(results.map(item => {
+                return {
+                    path: item.relative.replace('/Enunciado/Release', ''),
+                    content: fs.readFileSync(item.full).toString('base64'),
+                    encoding: 'base64'
+                }
+            }), message)
+        })
+
+        /*
         this.repositories.private.download(path, (err: any, relative: string, full: string) => {
             // On each file
             if (err) {
@@ -107,6 +119,7 @@ export class AyudanteBOT extends Bot {
                 );
             }
         })
+        */
     }
 
     searchStudent(o: ISearchStudentOptions): Student[] {

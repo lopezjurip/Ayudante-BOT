@@ -10,6 +10,7 @@ var telegram_typed_bot_1 = require('./bot/telegram-typed-bot');
 var parser_1 = require('./models/parser');
 var git_mananger_1 = require("./git/git-mananger");
 exports.t = require('./bot/telegram-bot-typings');
+var fs = require('fs');
 var AyudanteBOT = (function (_super) {
     __extends(AyudanteBOT, _super);
     function AyudanteBOT(options) {
@@ -55,29 +56,28 @@ var AyudanteBOT = (function (_super) {
     AyudanteBOT.prototype.personGithubURLinOrganization = function (person) {
         return this.githubUrl + '/' + person.github;
     };
-    AyudanteBOT.prototype.publishActivity = function (number, callback) {
+    AyudanteBOT.prototype.publishActivity = function (number) {
         var twoDigit = (number < 10) ? '0' + number : '' + number;
         var path = "Actividades/AC" + twoDigit + "/Enunciado/Release/";
         var message = "[BOT] Publicada AC" + twoDigit;
-        this.publish(path, message, callback);
+        return this.publish(path, message);
     };
-    AyudanteBOT.prototype.publishHomework = function (number, callback) {
+    AyudanteBOT.prototype.publishHomework = function (number) {
         var twoDigit = (number < 10) ? '0' + number : '' + number;
         var path = "Tareas/T" + twoDigit + "/Enunciado/Release/";
         var message = "[BOT] Publicada T" + twoDigit;
-        this.publish(path, message, callback);
+        return this.publish(path, message);
     };
-    AyudanteBOT.prototype.publish = function (path, message, callback) {
+    AyudanteBOT.prototype.publish = function (path, message) {
         var _this = this;
-        this.repositories.private.download(path, function (err, relative, full) {
-            if (err) {
-                console.log('Download error', path, err);
-                if (callback)
-                    callback(err, path);
-            }
-            else {
-                _this.repositories.syllabus.uploadFile(full, relative.replace('/Enunciado/Release', ''), message, callback);
-            }
+        return this.repositories.private.download(path).then(function (results) {
+            return _this.repositories.syllabus.commitFiles(results.map(function (item) {
+                return {
+                    path: item.relative.replace('/Enunciado/Release', ''),
+                    content: fs.readFileSync(item.full).toString('base64'),
+                    encoding: 'base64'
+                };
+            }), message);
         });
     };
     AyudanteBOT.prototype.searchStudent = function (o) {

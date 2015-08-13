@@ -60,7 +60,11 @@ bot.onCommand('/publicar_actividad', (msg: t.Message, arg: string = '') => {
         bot.sendMessage(msg.chat.id,
             `Publicando en: ${bot.syllabusUrl}/tree/master/Actividades/AC${(number < 10) ? '0' + number : number}`
         );
-        bot.publishActivity(number, (err: any, result: any) => {
+        bot.publishActivity(number).then(result => {
+            bot.sendMessage(msg.chat.id,
+                `Publicado archivo: ${result}`
+            );
+            /*
             if (err) {
                 bot.sendMessage(msg.chat.id,
                     `Publicado archivo: ${result.content.path}`
@@ -70,10 +74,14 @@ bot.onCommand('/publicar_actividad', (msg: t.Message, arg: string = '') => {
                     `Publicado archivo: ${result.content.path}`
                 );
             }
+            */
+        }).catch(err => {
+            console.log(err)
         })
     }
 })
 
+/*
 bot.onCommand('/publicar_tarea', (msg: t.Message, arg: string = '') => {
     if (arg == '') {
         bot.sendMessage(msg.chat.id,
@@ -97,3 +105,4 @@ bot.onCommand('/publicar_tarea', (msg: t.Message, arg: string = '') => {
         })
     }
 })
+*/
