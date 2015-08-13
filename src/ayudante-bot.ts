@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import {TelegramTypedBot as Bot, IServerOptions, BotAction} from './bot/telegram-typed-bot';
 import {loadStudents, loadAssistents} from './models/parser';
 import {Assistent, Student, Person} from './models/models';
-import Repository from "./git/repository";
+import {Repository, FilePath, FileBlob} from "./git/repository";
 import {GitManager} from "./git/git-mananger";
 
 export import t = require('./bot/telegram-bot-typings')
@@ -108,34 +108,78 @@ export class AyudanteBOT extends Bot {
             }), message).then(commit => {
                 results.map(r => r.full).forEach(fs.unlinkSync)
                 return commit
+            }).catch(err => {
+                results.map(r => r.full).forEach(fs.unlinkSync)
+                return err
             })
         }).then(commit => {
             return commit.object.url
         })
     }
 
-    recollect() {
-        return Promise.all(this.students.filter(s => s.quitted).map(student => {
-            let repo = this.studentPrivateRepository(student)
-            return repo.download('path: string').then(files => {
+    recollectActivity(number: number) : Promise<string> {
+        const twoDigit = (number < 10) ? '0' + number : '' + number;
+        const saveOnPath = `Actividades/AC${twoDigit}/Corrección`;
+        const studentRepoRelative = `Actividades/AC${twoDigit}`
+        const feedbackPath = `Actividades/AC${twoDigit}/Enunciado/FEEDBACK.md`
+        const message = `[BOT] Recolectada AC${twoDigit}`;
+        return this.recollect(saveOnPath, studentRepoRelative, feedbackPath, message)
+    }
+
+    recollectHomework(number: number) : Promise<string> {
+        const twoDigit = (number < 10) ? '0' + number : '' + number;
+        const saveOnPath = `Tareas/T${twoDigit}/Corrección`;
+        const studentRepoRelative = `Tareas/T${twoDigit}`
+        const feedbackPath = `Tareas/T${twoDigit}/Enunciado/FEEDBACK.md`
+        const message = `[BOT] Recolectada T${twoDigit}`;
+        return this.recollect(saveOnPath, studentRepoRelative, feedbackPath, message)
+    }
+
+    private recollect(saveOnPath: string, studentRepoRelative: string, feedbackPath: string, message: string) : Promise<string> {
+        return this.repositories.private.download(feedbackPath).then(files => {
+            const file: FilePath = files[0]
+            return file //files[0] // FEEDBACK.md
+        }).then(feedback => {
+            return this.downloadForEachStudent(studentRepoRelative).then(results => {
+                return results.map(item => {
+                    console.log(item)
+                    const student = item.student
+                    const files = item.files
+
+                    files.push({
+                        relative: studentRepoRelative + '/FEEDBACK.md',
+                        full: feedback.full
+                    })
+
+                    return files.map(file => {
+                        return {
+                            path: saveOnPath + '/' + student.github + file.relative.replace(studentRepoRelative, ''),
+                            content: fs.readFileSync(file.full).toString('base64'),
+                            encoding: 'base64'
+                        }
+                    })
+                })
+            })
+        }).then(collectionOfBlobs => {
+            const blobs: FileBlob[] = [].concat.apply([], collectionOfBlobs)
+            return blobs
+        }).then(blobs => {
+            return this.repositories.private.commitFiles(blobs, message).then(commit => {
+                //blobs.map(r => r.full).forEach(fs.unlinkSync)
+                return commit
+            })
+        }).then(commit => {
+            return commit.object.url
+        })
+    }
+
+    private downloadForEachStudent(relativePath: string) : Promise<{student: Student, files: FilePath[]}[]> {
+        return Promise.all(this.students.filter(s => !s.quitted).map(student => {
+            // Download each student work
+            return this.studentPrivateRepository(student).download(relativePath).then(files => {
                 return {student: student, files: files}
             })
-        })).then(result => {
-            /*
-            function flatten<T>(arr) : T[] {
-                return arr.reduce(function(flat, toFlatten) {
-                    return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
-                }, []);
-            }
-            let files = flatten<{relative: string, full: string}>(result).map(item => {
-                return {
-                    path: 'Actividades/AC01/Corrección/',
-                    content: fs.readFileSync(item.full).toString('base64'),
-                    encoding: 'base64'
-                }
-            })
-            */
-        });
+        }))
     }
 
     searchStudent(o: ISearchStudentOptions): Student[] {

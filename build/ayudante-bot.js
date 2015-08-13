@@ -83,20 +83,72 @@ var AyudanteBOT = (function (_super) {
             }), message).then(function (commit) {
                 results.map(function (r) { return r.full; }).forEach(fs.unlinkSync);
                 return commit;
+            }).catch(function (err) {
+                results.map(function (r) { return r.full; }).forEach(fs.unlinkSync);
+                return err;
             });
         }).then(function (commit) {
             return commit.object.url;
         });
     };
-    AyudanteBOT.prototype.recollect = function () {
+    AyudanteBOT.prototype.recollectActivity = function (number) {
+        var twoDigit = (number < 10) ? '0' + number : '' + number;
+        var saveOnPath = "Actividades/AC" + twoDigit + "/Correcci\u00F3n";
+        var studentRepoRelative = "Actividades/AC" + twoDigit;
+        var feedbackPath = "Actividades/AC" + twoDigit + "/Enunciado/FEEDBACK.md";
+        var message = "[BOT] Recolectada AC" + twoDigit;
+        return this.recollect(saveOnPath, studentRepoRelative, feedbackPath, message);
+    };
+    AyudanteBOT.prototype.recollectHomework = function (number) {
+        var twoDigit = (number < 10) ? '0' + number : '' + number;
+        var saveOnPath = "Tareas/T" + twoDigit + "/Correcci\u00F3n";
+        var studentRepoRelative = "Tareas/T" + twoDigit;
+        var feedbackPath = "Tareas/T" + twoDigit + "/Enunciado/FEEDBACK.md";
+        var message = "[BOT] Recolectada T" + twoDigit;
+        return this.recollect(saveOnPath, studentRepoRelative, feedbackPath, message);
+    };
+    AyudanteBOT.prototype.recollect = function (saveOnPath, studentRepoRelative, feedbackPath, message) {
         var _this = this;
-        return Promise.all(this.students.filter(function (s) { return s.quitted; }).map(function (student) {
-            var repo = _this.studentPrivateRepository(student);
-            return repo.download('path: string').then(function (files) {
+        return this.repositories.private.download(feedbackPath).then(function (files) {
+            var file = files[0];
+            return file;
+        }).then(function (feedback) {
+            return _this.downloadForEachStudent(studentRepoRelative).then(function (results) {
+                return results.map(function (item) {
+                    console.log(item);
+                    var student = item.student;
+                    var files = item.files;
+                    files.push({
+                        relative: studentRepoRelative + '/FEEDBACK.md',
+                        full: feedback.full
+                    });
+                    return files.map(function (file) {
+                        return {
+                            path: saveOnPath + '/' + student.github + file.relative.replace(studentRepoRelative, ''),
+                            content: fs.readFileSync(file.full).toString('base64'),
+                            encoding: 'base64'
+                        };
+                    });
+                });
+            });
+        }).then(function (collectionOfBlobs) {
+            var blobs = [].concat.apply([], collectionOfBlobs);
+            return blobs;
+        }).then(function (blobs) {
+            return _this.repositories.private.commitFiles(blobs, message).then(function (commit) {
+                return commit;
+            });
+        }).then(function (commit) {
+            return commit.object.url;
+        });
+    };
+    AyudanteBOT.prototype.downloadForEachStudent = function (relativePath) {
+        var _this = this;
+        return Promise.all(this.students.filter(function (s) { return !s.quitted; }).map(function (student) {
+            return _this.studentPrivateRepository(student).download(relativePath).then(function (files) {
                 return { student: student, files: files };
             });
-        })).then(function (result) {
-        });
+        }));
     };
     AyudanteBOT.prototype.searchStudent = function (o) {
         var filtered = this.students.filter(function (a) {

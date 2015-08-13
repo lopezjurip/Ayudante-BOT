@@ -105,5 +105,4 @@ var Repository = (function () {
     };
     return Repository;
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = Repository;
+exports.Repository = Repository;

@@ -1,0 +1,11 @@
+ayudantes - Busca info de los ayudantes
+alumnos - Busca info de los alumnos
+ayudante_random - Filtra por area y/o nivel
+alumno_random - Filtra por sección
+publicar_actividad - 🔐Publica por número al syllabus
+publicar_tarea - 🔐Publica por número al syllabus
+recolectar_actividad - 🔐Por número al privado
+recolectar_tarea - 🔐Por número al privado
+facebook - URL de nuestro grupo privado
+syllabus - URL del repositorio público
+privado - URL del repositorio privado de los ayudantes

@@ -97,7 +97,23 @@ bot.onCommand('/publicar_tarea', (msg: t.Message, arg: string = '') => {
 })
 
 bot.onCommand('/recolectar_actividad', (msg: t.Message, arg: string = '') => {
-    
+    if (arg == '') {
+        bot.sendMessage(msg.chat.id,
+            `Debes especificar el número de la AC como parámetro.`
+        );
+    } else {
+        const number = parseInt(arg, 10);
+        bot.recollectActivity(number).then(url => {
+            bot.sendMessage(msg.chat.id,
+                `Éxito! Commit: ${url}`
+            );
+        }).catch(err => {
+            console.log(err)
+            bot.sendMessage(msg.chat.id,
+                `Error: ${err}`
+            );
+        })
+    }
 })
 
 bot.onCommand('/recolectar_tarea', (msg: t.Message, arg: string = '') => {

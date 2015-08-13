@@ -5,7 +5,7 @@ var GitManager = (function () {
         this.octo = new Octokat({ token: token });
     }
     GitManager.prototype.repo = function (owner, name) {
-        return new repository_1.default(this.octo.repos(owner, name), owner, name);
+        return new repository_1.Repository(this.octo.repos(owner, name), owner, name);
     };
     return GitManager;
 })();

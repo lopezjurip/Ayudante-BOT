@@ -62,6 +62,18 @@ bot.onCommand('/publicar_tarea', function (msg, arg) {
 });
 bot.onCommand('/recolectar_actividad', function (msg, arg) {
     if (arg === void 0) { arg = ''; }
+    if (arg == '') {
+        bot.sendMessage(msg.chat.id, "Debes especificar el n\u00FAmero de la AC como par\u00E1metro.");
+    }
+    else {
+        var number = parseInt(arg, 10);
+        bot.recollectActivity(number).then(function (url) {
+            bot.sendMessage(msg.chat.id, "\u00C9xito! Commit: " + url);
+        }).catch(function (err) {
+            console.log(err);
+            bot.sendMessage(msg.chat.id, "Error: " + err);
+        });
+    }
 });
 bot.onCommand('/recolectar_tarea', function (msg, arg) {
     if (arg === void 0) { arg = ''; }

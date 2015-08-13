@@ -12,7 +12,18 @@ function writeFileSync(path: string, data: string, encoding: string) {
     fs.writeFileSync(path, new Buffer(data, encoding))
 }
 
-export default class Repository {
+export interface FilePath {
+    relative: string
+    full: string
+}
+
+export interface FileBlob {
+    path: string
+    content: any
+    encoding: string
+}
+
+export class Repository {
     repo: any
     owner: string
     name: string
@@ -28,7 +39,7 @@ export default class Repository {
         return resolve(process.env.OPENSHIFT_TMP_DIR || './temp', this.owner, this.name);
     }
 
-    public download(path: string): Promise<{ relative: string, full: string }[]> {
+    public download(path: string): Promise<FilePath[]> {
         return this.repo.contents(path).fetch().then(contents => {
             let collection: any[] = (contents instanceof Array) ? contents : [contents]
             return Promise.all(collection.map(content => {
@@ -60,18 +71,18 @@ export default class Repository {
         })
     }
 
-    private fetchTree() {
+    private fetchTree() : Promise<any> {
         return this.fetchHead().then(commit => {
             this.head = commit;
             return this.repo.git.trees(commit.object.sha).fetch();
         });
     }
 
-    private fetchHead(branch: string = 'master') {
+    private fetchHead(branch: string = 'master') : Promise<any> {
         return this.repo.git.refs.heads(branch).fetch();
     }
 
-    public commitFiles(files: { path: string, content: any, encoding: string }[], message: string, branch: string = 'master') {
+    public commitFiles(files: FileBlob[], message: string, branch: string = 'master') : Promise<any> {
         return Promise.all(files.map(file => {
             return this.repo.git.blobs.create({
                 content: file.content,

@@ -1,4 +1,4 @@
-import Repository from "./repository";
+import {Repository} from "./repository";
 let Octokat = require('octokat')
 
 export class GitManager {
