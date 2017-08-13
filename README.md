@@ -107,7 +107,7 @@ $ npm start
 
 ## Testing
 
-This project usings [mocha](http://visionmedia.github.io/mocha/) for unit testing.
+This project usings [mocha](http://mochajs.org/) for unit testing.
 
 Install mocha:
 ```sh
